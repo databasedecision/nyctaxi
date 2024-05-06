@@ -10,7 +10,8 @@ The Set-up
  
 2.	Spin up Composer 2 environment with autoscaling
  
-3.	Upload pipeline and metadata yaml files into GCS bucket and modules for ETL & validation in nested within DAG folder 
+3.	Upload pipeline and metadata yaml(after updating the relevant metadata) files into GCS bucket and modules for ETL & validation in nested within DAG folder
+   
   	   
 5.	Specify as below within admin -> variable
  
