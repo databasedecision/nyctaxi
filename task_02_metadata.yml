@@ -1,0 +1,72 @@
+
+pipelines:
+  - name: yellow_taxi_pipeline
+    source_table:
+      project: forward-lead-421716
+      dataset: task_1
+      table: yellow_taxi_transformed
+      watermark_column: dropoff_datetime
+    transformations:
+      - name: yellow_passengers_hour
+        aggr_col: passenger_count
+        query: 
+          SELECT 
+            vendor_id, 
+            date({watermark_column}) as dropoff_date,
+            cast(extract(hour from {watermark_column}) as integer) as dropoff_hour,
+            sum({aggr_col}) as total_passengers
+          FROM `{source_table_addr}`
+          WHERE date({watermark_column}) = '{previous_date}'
+          GROUP BY 1, 2, 3;
+    destination_table:
+      project: forward-lead-421716
+      dataset: task_2
+      table: yellow_taxi_dest
+      watermark_column: dropoff_timestamp
+    bq_schema:
+      - name: vendor_id
+        type: STRING
+      - name: dropoff_date
+        type: DATE
+      - name: dropoff_hour
+        type: INTEGER
+      - name: total_passengers
+        type: INTEGER
+    partition:
+      type: month
+      column: dropoff_date
+
+  - name: green_taxi_pipeline
+    source_table:
+      project: bigquery-public-data
+      dataset: new_york_taxi_trips
+      table: tlc_green_trips_2022
+      watermark_column: dropoff_datetime
+    transformations:
+      - name: green_tips_day
+        aggr_col: tip_amount
+        query: 
+          SELECT 
+            vendor_id, 
+            date({watermark_column}) as dropoff_date,
+            sum({aggr_col}) as total_tips
+          FROM `{source_table_addr}`
+          WHERE date({watermark_column}) = '{previous_date}'
+          GROUP BY 1, 2;
+    destination_table:
+      project: forward-lead-421716
+      dataset: task_2
+      table: green_taxi_dest
+      watermark_column: dropoff_timestamp
+      write_disposition: WRITE_TRUNCATE
+    bq_schema:
+      - name: vendor_id
+        type: STRING
+      - name: dropoff_date
+        type: DATE
+      - name: total_tips
+        type: NUMERIC
+    partition:
+      type: month
+      column: dropoff_date
+

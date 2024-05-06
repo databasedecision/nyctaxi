@@ -1,0 +1,85 @@
+extracted_data: /tmp/extracted_data.json
+transformed_data: /tmp/transformed_data.json
+
+source_table:
+  project: bigquery-public-data
+  dataset: new_york_taxi_trips
+  table: tlc_yellow_trips_2022
+  watermark_column: dropoff_datetime
+
+destination_table:
+  project: forward-lead-421716
+  dataset: task_1
+  table: yellow_taxi_transformed
+  watermark_column: dropoff_timestamp
+
+transformations:
+  - name: convert_to_est
+    columns:
+      - pickup_datetime
+      - dropoff_datetime
+
+  - name: add_location_names
+    lookup_table:
+      project: bigquery-public-data
+      dataset: new_york_taxi_trips
+      table: taxi_zone_geom
+      key_col: zone_id
+      value_col: zone_name
+    columns:
+      - pickup_location_id
+      - dropoff_location_id
+
+anomaly_threshold:
+  min: 0.5
+  max: 2
+
+bq_schema:
+  - name: vendor_id
+    type: STRING
+  - name: pickup_datetime
+    type: TIMESTAMP
+  - name: dropoff_datetime
+    type: TIMESTAMP
+  - name: passenger_count
+    type: INTEGER
+  - name: trip_distance
+    type: NUMERIC
+  - name: rate_code
+    type: STRING
+  - name: store_and_fwd_flag
+    type: STRING
+  - name: payment_type
+    type: STRING
+  - name: fare_amount
+    type: NUMERIC
+  - name: extra
+    type: NUMERIC
+  - name: mta_tax
+    type: NUMERIC
+  - name: tip_amount
+    type: NUMERIC
+  - name: tolls_amount
+    type: NUMERIC
+  - name: imp_surcharge
+    type: NUMERIC
+  - name: airport_fee
+    type: NUMERIC
+  - name: total_amount
+    type: NUMERIC
+  - name: pickup_location_id
+    type: STRING
+  - name: dropoff_location_id
+    type: STRING
+  - name: data_file_year
+    type: INTEGER
+  - name: data_file_month
+    type: INTEGER
+  - name: pickup_timestamp
+    type: TIMESTAMP
+  - name: dropoff_timestamp
+    type: TIMESTAMP
+  - name: pickup_location_name
+    type: STRING
+  - name: dropoff_location_name
+    type: STRING
